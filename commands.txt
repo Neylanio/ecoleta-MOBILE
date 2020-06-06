@@ -1,0 +1,19 @@
+ReactNative
+
+Instalar o Expo de maneira global
+- npm install -g expo-cli
+
+Iniciar projeto
+- expo init mobile
+- blank com Typescript
+
+Importar fontes
+- expo install expo-font @expo-google-fonts/ubuntu @expo-google-fonts/roboto 	
+OBS: prompt como adm
+
+
+
+- npm install @react-navigation/native
+- expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
+- npm install @react-navigation/stack
+ 
