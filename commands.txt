@@ -16,4 +16,19 @@ OBS: prompt como adm
 - npm install @react-navigation/native
 - expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
 - npm install @react-navigation/stack
+
+Usar maps
+- expo install react-native-maps
+- expo install expo-constants
+
+
+//Componente do Image do ReactNative por padrao nao entende .svg
+- expo install react-native-svg
  
+
+ //Pegar a localizacao atual
+ - expo install expo-location
+
+
+ //usar recursos do email
+ - expo install expo-mail-composer
