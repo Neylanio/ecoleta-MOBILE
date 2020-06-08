@@ -1,25 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Feather as Icon } from '@expo/vector-icons';
-import { View, Image, Text, ImageBackground, StyleSheet, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Image, Text, ImageBackground, StyleSheet, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 
 //Pra dar um efeito de escurecimento ao clicar
 import { RectButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
+import RNPickerSelect, { PickerStyle } from 'react-native-picker-select';
+
+import axios from 'axios';
 
 //ImageBackground funciona como uma View, é utilizada quando for colocar imagem no background
 
+interface IBGEUFResponse{
+  sigla: string;
+}
+
+interface IBGECITYResponse{
+  nome: string;
+}
+
+
 const Home = () => {
 
-    const [ uf, setUf ] = useState('');
-    const [ city, setCity ] = useState('');
+    const [ selectedUf, setSelectedUf ] = useState('0');
+    const [ selectedCity, setSelectedCity ] = useState('0');
+
+    const [ ufs, setUfs ] = useState<string[]>([]);
+    const [ cities, setCities ] = useState<string[]>([]);
 
     const navigation = useNavigation();
 
+    useEffect(() => {
+      axios.get<IBGEUFResponse[]>("https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome").then(response => {
+        const ufInitials = response.data.map(Uf => Uf.sigla);
+
+        setUfs(ufInitials);
+
+      });
+    }, []);
+
+    useEffect(() => {
+      if(selectedUf === '0') return;
+
+      axios.get<IBGECITYResponse[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios?orderBy=nome`).then(response => {
+        const cityInitials = response.data.map(City => City.nome);
+        setCities(cityInitials);          
+      })
+
+    }, [selectedUf]);
+
     function handleNavigateToPoints(){
         navigation.navigate('Points', {
-          uf, city
+          uf: selectedUf, city: selectedCity
         });
+    }
+
+    function handleNavigateToPointsAlert(){
+      Alert.alert("Selecione ESTADO e CIDADE");
     }
 
     return (
@@ -39,7 +77,40 @@ const Home = () => {
 
               <View style={styles.footer}>
 
-                <TextInput 
+                <RNPickerSelect
+                  placeholder={{
+                    label: 'Selecione um ESTADO...',
+                    value: null
+                  }}
+                  value={selectedUf}
+                  items={ufs.map(Uf => (
+                    {label: Uf, value: Uf, key: Uf}
+                  ))}
+                  onValueChange={value => {
+                    setSelectedUf(value);
+                  }}
+                  useNativeAndroidPickerStyle={true}
+                />
+
+                <RNPickerSelect
+                  placeholder={{ 
+                    label: 'Selecione uma CIDADE...',
+                    value: null
+                   }}
+                  value={selectedCity}
+                  items={cities.map(City => (
+                    {label: City, value: City}
+                  ))}
+                   
+                  onValueChange={value => {
+                    setSelectedCity(value);
+                  }}
+                  useNativeAndroidPickerStyle={true}
+                />
+
+
+
+                {/* <TextInput 
                   style={styles.input}
                   placeholder="Digite a UF"
                   value={uf}
@@ -55,9 +126,9 @@ const Home = () => {
                   value={city}
                   autoCorrect={false}
                   onChangeText={setCity}
-                />
+                /> */}
 
-                <RectButton style={styles.button} onPress={handleNavigateToPoints}>
+                <RectButton style={ styles.button } onPress={selectedUf !== '0' && selectedCity !== '0' ? handleNavigateToPoints : handleNavigateToPointsAlert}>
                   <View style={styles.buttonIcon}>
                     <Text>
                       <Icon name="arrow-right" color="#FFF" size={24} />
@@ -79,6 +150,12 @@ const styles = StyleSheet.create({
     container: {
       flex: 1,
       padding: 32,
+      // backgroundColor: '#1C1C1C'
+    },
+
+    selectItems: {
+
+      borderColor: '#1C1C1C'
     },
   
     main: {
@@ -124,6 +201,10 @@ const styles = StyleSheet.create({
       overflow: 'hidden',
       alignItems: 'center',
       marginTop: 8,
+    },
+
+    buttonDisabled: {
+      opacity: 0.5
     },
   
     buttonIcon: {
